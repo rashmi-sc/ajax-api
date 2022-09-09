@@ -789,12 +789,23 @@ function twentytwenty_get_elements_array() {
 
 add_action( 'wp_enqueue_scripts', 'add_my_script' );
 function add_my_script() {
-    wp_enqueue_script(
-        'jquery-script', // name your script so that you can attach other scripts and de-register, etc.
-        'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js', // this is the location of your script file
-        array('jquery') // this array lists the scripts upon which your script depends
-    );
-    wp_localize_script( 'ajax-pagination', 'ajaxpagination', array(
-	'ajaxurl' => admin_url( 'admin-ajax.php' )
-));
+    
+	wp_enqueue_script('jquery');
+	wp_enqueue_style( 'dashicons' );
+	wp_localize_script( 'jquery', 'ajax_object', array(
+		'ajaxurl' => admin_url( 'admin-ajax.php' ),
+		'ajaxnonce' => wp_create_nonce( 'ajax_post_validation' )
+	  ) );
 }
+
+function like_count_update(){
+	$post_id = $_POST['post_id'];
+	$counter = $_POST['counter'];
+	update_post_meta( $post_id, 'like_count', $counter );
+echo $counter;
+	if(metadata_exists('post', $post_id, 'like_count')) {
+	}
+	exit();
+}
+add_action('wp_ajax_nopriv_like_count_update', 'like_count_update');
+add_action('wp_ajax_like_count_update', 'like_count_update');

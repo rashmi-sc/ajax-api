@@ -42,24 +42,3 @@ if ( $post_list->have_posts() ) : ?>
 <?php endif; ?>
 </div>
 <?php get_footer(); ?>
-<script>
-      jQuery(".load_more").on('click', function(e) {
-            e.preventDefault();
-            $.ajax({
-                  type: "GET",
-                  url: 'wp-json/wp/v2/posts/?per_page=10',
-                  success: function(data) {
-                        console.log(data);
-                        data.forEach(post => {
-                              jQuery("#list_post").append(`
-                              <li><a href="${post.link}" target="_blank">${post.title.rendered}</a></li>
-                              `)
-                        });
-                  },
-                  error: function(result) {
-                        alert('error');
-                  }
-            });
-      });
-      
-</script>

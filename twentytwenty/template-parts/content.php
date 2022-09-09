@@ -62,8 +62,10 @@
 			get_template_part( 'template-parts/entry-author-bio' );
 
 		}
-		?>
 
+		?>
+		<div id="<?php echo get_the_ID(); ?>" class="like_button"><span class="dashicons dashicons-thumbs-up"></span>Like( <span class="counter_number"><?php echo get_post_meta( get_the_ID(), 'like_count', true ); ?></span> )</div>
+		
 	</div><!-- .section-inner -->
 
 	<?php
