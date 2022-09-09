@@ -841,30 +841,30 @@ function twentytwentyFindParents( target, query ) {
 	return parents;
 }
 
-jQuery( document ).ready(function() {
-	jQuery(".load_more").on('click', function(e) {
+jQuery( document ).ready( function() {
+	jQuery( ".load_more" ).on( 'click', function(e) {
 		e.preventDefault();
 		jQuery.ajax({
 			type: "GET",
 			url: 'wp-json/wp/v2/posts/?per_page=10',
-			success: function(data) {
-				console.log(data);
-				data.forEach(post => {
-					jQuery("#list_post").append(`
+			success: function( data ) {
+				console.log( data );
+				data.forEach( post => {
+					jQuery( "#list_post" ).append(`
 					<li><a href="${post.link}" target="_blank">${post.title.rendered}</a></li>
 					`)
 				});
 			},
-			error: function(result) {
-				alert('error');
+			error: function( result ) {
+				alert( 'error' );
 			}
 		});
 	});
 
-	var counter = jQuery('.counter_number').text();
-	jQuery(".like_button").on('click', function(e) {
+	var counter = jQuery( '.counter_number' ).text();
+	jQuery( ".like_button" ).on( 'click', function(e) {
 		counter++;
-		var post_id = jQuery(this).attr( 'id' );
+		var post_id = jQuery( this ).attr( 'id' );
 		var like_counter = counter;
 		
 		jQuery.ajax({
@@ -875,13 +875,13 @@ jQuery( document ).ready(function() {
 			    post_id: post_id,
 			    counter: like_counter,
 			},
-			success: function(data) {
-				console.log(data);
+			success: function( data ) {
+				console.log( data );
 				console.log('success');
-				jQuery('.counter_number').html( data );
+				jQuery( '.counter_number' ).html( data );
 			},
-			error: function(data) {
-				console.log('error');
+			error: function( data ) {
+				console.log( 'error' );
 			}
 		});
 	});

@@ -63,8 +63,15 @@
 
 		}
 
+		// Getting the count of post likes
+		$tt_get_like_count = '0';
+		if ( ! empty ( $tt_get_like_count ) ) {
+			$tt_get_like_count = get_post_meta( get_the_ID(), 'like_count', true );
+		}
 		?>
-		<div id="<?php echo get_the_ID(); ?>" class="like_button"><span class="dashicons dashicons-thumbs-up"></span>Like( <span class="counter_number"><?php echo get_post_meta( get_the_ID(), 'like_count', true ); ?></span> )</div>
+		<div id="<?php echo get_the_ID(); ?>" class="like_button">
+			<span class="dashicons dashicons-thumbs-up"></span>Like( <span class="counter_number"><?php echo esc_html_e( $tt_get_like_count ) ; ?></span> )
+		</div>
 		
 	</div><!-- .section-inner -->
 

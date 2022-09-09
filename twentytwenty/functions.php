@@ -798,13 +798,19 @@ function add_my_script() {
 	  ) );
 }
 
+/**
+ * Returns a value of variable for the like count.
+ *
+ * @since Twenty Twenty 1.0
+ *
+ * @return array
+ */
+
 function like_count_update(){
 	$post_id = $_POST['post_id'];
 	$counter = $_POST['counter'];
 	update_post_meta( $post_id, 'like_count', $counter );
-echo $counter;
-	if(metadata_exists('post', $post_id, 'like_count')) {
-	}
+	echo $counter;
 	exit();
 }
 add_action('wp_ajax_nopriv_like_count_update', 'like_count_update');
