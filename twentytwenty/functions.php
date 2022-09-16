@@ -807,10 +807,13 @@ function add_my_script() {
  */
 
 function like_count_update(){
-	$post_id = $_POST['post_id'];
-	$counter = $_POST['counter'];
-	update_post_meta( $post_id, 'like_count', $counter );
-	echo $counter;
+	// Check for nonce security      
+	if ( wp_verify_nonce( $_POST['_wpnonce'], 'ajax_post_validation' ) ) {
+		$post_id = (is_numeric($_POST['post_id']) ? (int)$_POST['post_id'] : 0);
+		$counter = (is_numeric($_POST['counter']) ? (int)$_POST['counter'] : 0);
+		update_post_meta( $post_id, 'like_count', $counter );
+		echo json_encode($counter, JSON_NUMERIC_CHECK);
+	}
 	exit();
 }
 add_action('wp_ajax_nopriv_like_count_update', 'like_count_update');

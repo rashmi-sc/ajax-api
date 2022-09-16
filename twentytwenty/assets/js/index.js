@@ -871,9 +871,10 @@ jQuery( document ).ready( function() {
 			type: 'POST',
 			url: ajax_object.ajaxurl,
 			data: {
-			    action: 'like_count_update',
-			    post_id: post_id,
-			    counter: like_counter,
+			    action   : 'like_count_update',
+			    post_id  : post_id,
+			    counter  : like_counter,
+			    _wpnonce : ajax_object.ajaxnonce,
 			},
 			success: function( data ) {
 				console.log( data );
