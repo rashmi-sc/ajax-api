@@ -65,7 +65,7 @@
 
 			$tt_get_like_count = get_post_meta( get_the_ID(), 'like_count', true );
 		?>
-		<div id="<?php echo get_the_ID(); ?>" class="like_button">
+		<div id="<?php echo esc_attr( get_the_ID() ); ?>" class="like_button">
 			<span class="dashicons dashicons-thumbs-up"></span>Like( <span class="counter_number"><?php echo esc_html( $tt_get_like_count ) ; ?></span> )
 		</div>
 		
