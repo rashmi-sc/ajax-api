@@ -808,10 +808,10 @@ function add_my_script() {
 
 function like_count_update(){
 	// Check for nonce security
-	$_wpnonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_STRING);
+	$_wpnonce = filter_input( INPUT_POST, '_wpnonce', FILTER_SANITIZE_STRING );
 	if ( wp_verify_nonce( $_wpnonce, 'ajax_post_validation' ) ) {
-		$post_id = (is_numeric($_POST['post_id']) ? (int)$_POST['post_id'] : 0);
-		$counter = (is_numeric($_POST['counter']) ? (int)$_POST['counter'] : 0);
+		$post_id = filter_input( INPUT_POST, 'post_id', FILTER_VALIDATE_INT );
+		$counter = filter_input( INPUT_POST, 'counter', FILTER_VALIDATE_INT );
 		update_post_meta( $post_id, 'like_count', $counter );
 		echo json_encode($counter, JSON_NUMERIC_CHECK);
 	}
