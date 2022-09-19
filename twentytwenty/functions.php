@@ -819,3 +819,109 @@ function like_count_update(){
 }
 add_action('wp_ajax_nopriv_like_count_update', 'like_count_update');
 add_action('wp_ajax_like_count_update', 'like_count_update');
+
+/**
+ * Widget area made for popular posts.
+ *
+ * @since Twenty Twenty 1.0
+ *
+ * @return array
+ */
+function twentytwenty_register_popular_posts_block() {
+	// Check function exists.
+	if( function_exists( 'acf_register_block_type' ) ) {
+
+		// Register a testimonial block.
+		acf_register_block_type( 
+			[
+				'name'              => 'popular-posts',
+				'title'             => __( 'Popular Posts' ),
+				'description'       => __( 'A custom Popular Post block based on View.' ),
+				'render_template'   => 'template-parts/blocks/popular-posts.php',
+				'category'          => 'formatting',
+			]
+		);
+	  }
+}
+add_action( 'acf/init', 'twentytwenty_register_popular_posts_block' );
+
+/**
+ * Set Post Views Count.
+ * 
+ * @since Twenty Twenty 1.0
+ *
+ * @return array
+ */
+function twentytwenty_set_post_views( $post_id ) {
+	$twentytwenty_count_key = 'wp_post_views_count';
+	$twentytwenty_count     = get_post_meta( $post_id, $twentytwenty_count_key, true );
+	 
+	if( '' === $twentytwenty_count ) {
+	    $twentytwenty_count = 0;
+	    delete_post_meta( $post_id, $twentytwenty_count_key );
+	    add_post_meta( $post_id, $twentytwenty_count_key, '0' );
+	} else {
+	    $twentytwenty_count++;
+	    update_post_meta( $post_id, $twentytwenty_count_key, $twentytwenty_count );
+	}
+}
+
+function twentytwenty_track_post_views ( $post_id ) {
+	if ( ! is_single() ) 
+	return;
+	 
+	if ( empty ( $post_id ) ) {
+	    global $post;
+	    $post_id = $post->ID;    
+	}
+	 
+	twentytwenty_set_post_views( $post_id );
+}
+   
+add_action( 'wp_head', 'twentytwenty_track_post_views');
+  
+remove_action( 'wp_head', 'adjacent_posts_rel_link_wp_head', 10, 0);
+
+/**
+ * Add custom taxonomies i.e. Sub Category
+ *
+ */
+function twentytwenty_add_subcategory_taxonomy() {
+	// Add new "Subcategory" taxonomy to Posts
+	register_taxonomy('sub_category', 'post', 
+		array(
+			'hierarchical' => true,
+			'labels'       => array(
+				'name'              => _x( 'Sub Category', 'Taxonomy General Name', 'twentytwenty' ),
+				'singular_name'     => _x( 'Sub Category', 'Taxonomy Singular Name', 'twentytwenty' ),
+				'search_items'      =>  __( 'Search Sub Categories', 'twentytwenty' ),
+				'all_items'         => __( 'All Sub Categories','twentytwenty' ),
+				'parent_item'       => __( 'Parent Sub Category', 'twentytwenty' ),
+				'parent_item_colon' => __( 'Parent Sub Category:', 'twentytwenty' ),
+				'edit_item'         => __( 'Edit Sub Category', 'twentytwenty' ),
+				'update_item'       => __( 'Update Sub Category', 'twentytwenty' ),
+				'add_new_item'      => __( 'Add New Sub Category', 'twentytwenty' ),
+				'new_item_name'     => __( 'New Sub Category Name', 'twentytwenty' ),
+				'menu_name'         => __( 'Sub Category', 'twentytwenty' ),
+			),
+			'rewrite'      => array(
+				'slug'         => 'random/sub_category',
+				'with_front'   => true,
+				'hierarchical' => true 
+			),
+		)
+	);
+}
+add_action( 'init', 'twentytwenty_add_subcategory_taxonomy', 0 );
+
+
+/**
+ * Add custom rewrite rule for posts category.
+ *
+ * Ex. /{CATEGORY}/{CATEGORY_NAME}/
+ */
+function twentytwenty_rewrite_rule() {
+	add_rewrite_rule( 'Random/(.+?)/?$', 'index.php?category_name=$matches[1]', 'top' );
+	add_rewrite_rule('^sub_category/([^/]+)(?:/([0-9]+))?/?$', 'index.php?taxonomy=sub_category&name=$matches[1]', 'top');
+}
+add_action( 'init', 'twentytwenty_rewrite_rule' );

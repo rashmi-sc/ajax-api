@@ -62,7 +62,6 @@
 			get_template_part( 'template-parts/entry-author-bio' );
 
 		}
-
 			$tt_get_like_count = get_post_meta( get_the_ID(), 'like_count', true );
 		?>
 		<div id="<?php echo esc_attr( get_the_ID() ); ?>" class="like_button">
