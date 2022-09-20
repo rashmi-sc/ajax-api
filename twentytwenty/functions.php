@@ -925,3 +925,31 @@ function twentytwenty_rewrite_rule() {
 	add_rewrite_rule('^sub_category/([^/]+)(?:/([0-9]+))?/?$', 'index.php?taxonomy=sub_category&name=$matches[1]', 'top');
 }
 add_action( 'init', 'twentytwenty_rewrite_rule' );
+
+
+add_filter( 'post_link', 'twentytwenty_post_permalink', 10, 3 ); 
+add_filter('rewrite_rules_array','twentytwenty_insertMyRewriteRules');
+add_filter('init','twentytwenty_flushRules'); 
+
+function twentytwenty_post_permalink( $permalink, $post, $leavename ) {
+  $twentytwenty_category = get_the_category($post->ID); 
+  $twentytwenty_taxonomy = get_the_terms($post->ID, 'sub_category'); 
+
+  if (  !empty($twentytwenty_category) )
+  {
+	$permalink = trailingslashit( home_url($twentytwenty_category[0]->slug . '/' . $twentytwenty_taxonomy[0]->slug .'/'. $post->post_name ) );
+  }
+  return $permalink;
+}
+
+function twentytwenty_flushRules(){
+  global $wp_rewrite;
+  $wp_rewrite->flush_rules();
+}
+
+function twentytwenty_insertMyRewriteRules($rules)
+{
+  $twentytwenty_newrules = array();
+  $twentytwenty_newrules['^(.*)$/(.*)$/(.*)$'] = 'index.php?category_name=$matches[1]&taxonomy=$matches[2]&name=$matches[3]';
+  return $twentytwenty_newrules + $rules;
+}
