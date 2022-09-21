@@ -922,34 +922,133 @@ add_action( 'init', 'twentytwenty_add_subcategory_taxonomy', 0 );
  */
 function twentytwenty_rewrite_rule() {
 	add_rewrite_rule( 'Random/(.+?)/?$', 'index.php?category_name=$matches[1]', 'top' );
-	add_rewrite_rule('^sub_category/([^/]+)(?:/([0-9]+))?/?$', 'index.php?taxonomy=sub_category&name=$matches[1]', 'top');
+	add_rewrite_rule( '^(.+?)/(.+?)/(.+?)/?$', 'index.php?post_type=post&name=$matches[3]', 'top' );
 }
 add_action( 'init', 'twentytwenty_rewrite_rule' );
 
-
-add_filter( 'post_link', 'twentytwenty_post_permalink', 10, 3 ); 
-add_filter('rewrite_rules_array','twentytwenty_insertMyRewriteRules');
-add_filter('init','twentytwenty_flushRules'); 
-
-function twentytwenty_post_permalink( $permalink, $post, $leavename ) {
-  $twentytwenty_category = get_the_category($post->ID); 
-  $twentytwenty_taxonomy = get_the_terms($post->ID, 'sub_category'); 
-
-  if (  !empty($twentytwenty_category) )
-  {
-	$permalink = trailingslashit( home_url($twentytwenty_category[0]->slug . '/' . $twentytwenty_taxonomy[0]->slug .'/'. $post->post_name ) );
-  }
-  return $permalink;
+function twentytwenty_default_post_link( $permalink, $post_link ){
+	if ( 'post' == $post_link->post_type ){
+	    $twentytwenty_terms = wp_get_object_terms( $post_link->ID, 'sub_category' );
+	    if( ! empty ( $twentytwenty_terms ) ){
+		  return str_replace( '%sub_category%' , $twentytwenty_terms[0]->slug , $permalink );
+	    }
+	}
+	return $permalink;  
 }
+add_filter( 'post_link', 'twentytwenty_default_post_link', 10, 3 );
 
+add_filter('init','twentytwenty_flushRules'); 
 function twentytwenty_flushRules(){
   global $wp_rewrite;
   $wp_rewrite->flush_rules();
 }
 
-function twentytwenty_insertMyRewriteRules($rules)
-{
-  $twentytwenty_newrules = array();
-  $twentytwenty_newrules['^(.*)$/(.*)$/(.*)$'] = 'index.php?category_name=$matches[1]&taxonomy=$matches[2]&name=$matches[3]';
-  return $twentytwenty_newrules + $rules;
+/*
+* Creating a function to create our CPT
+*/
+add_action( 'init', 'twentytwenty_event_post_type', 0 );   
+function twentytwenty_event_post_type() {
+  
+	// Set UI labels for Custom Post Type
+	$labels = array(
+		'name'                => _x( 'Events', 'Post Type General Name', 'twentytwentyone' ),
+		'singular_name'       => _x( 'Event', 'Post Type Singular Name', 'twentytwentyone' ),
+		'menu_name'           => __( 'Events', 'twentytwentyone' ),
+		'parent_item_colon'   => __( 'Parent Event', 'twentytwentyone' ),
+		'all_items'           => __( 'All Events', 'twentytwentyone' ),
+		'view_item'           => __( 'View Event', 'twentytwentyone' ),
+		'add_new_item'        => __( 'Add New Event', 'twentytwentyone' ),
+		'add_new'             => __( 'Add New', 'twentytwentyone' ),
+		'edit_item'           => __( 'Edit Event', 'twentytwentyone' ),
+		'update_item'         => __( 'Update Event', 'twentytwentyone' ),
+		'search_items'        => __( 'Search Event', 'twentytwentyone' ),
+		'not_found'           => __( 'Not Found', 'twentytwentyone' ),
+		'not_found_in_trash'  => __( 'Not found in Trash', 'twentytwentyone' ),
+	);
+		
+	// Set other options for Custom Post Type
+	$args = array(
+		'label'               => __( 'Events', 'twentytwentyone' ),
+		'description'         => __( 'Event news and reviews', 'twentytwentyone' ),
+		'labels'              => $labels,
+		'supports'            => array( 'title', 'editor', 'excerpt', 'author', 'thumbnail', 'comments', 'revisions', 'custom-fields', ),
+		'taxonomies'          => array( 'EventType' ),
+		'hierarchical'        => true,
+		'public'              => true,
+		'show_ui'             => true,
+		'show_in_menu'        => true,
+		'show_in_nav_menus'   => true,
+		'show_in_admin_bar'   => true,
+		'menu_position'       => 5,
+		'can_export'          => true,
+		'has_archive'         => true,
+		'exclude_from_search' => false,
+		'publicly_queryable'  => true,
+		'capability_type'     => 'post',
+		'show_in_rest'        => true,
+	);
+	
+	register_post_type( 'Events', $args );  
 }
+
+add_action( 'init', 'twentytwenty_create_events_custom_taxonomy', 0 );
+
+//create a custom taxonomy name it "type" for your posts
+function twentytwenty_create_events_custom_taxonomy() {
+
+  $labels = array(
+    'name' => _x( 'Types', 'taxonomy general name' ),
+    'singular_name' => _x( 'Type', 'taxonomy singular name' ),
+    'search_items' =>  __( 'Search Types' ),
+    'all_items' => __( 'All Types' ),
+    'parent_item' => __( 'Parent Type' ),
+    'parent_item_colon' => __( 'Parent Type:' ),
+    'edit_item' => __( 'Edit Type' ), 
+    'update_item' => __( 'Update Type' ),
+    'add_new_item' => __( 'Add New Type' ),
+    'new_item_name' => __( 'New Type Name' ),
+    'menu_name' => __( 'Types' ),
+  ); 	
+
+  register_taxonomy('types',array('events'), array(
+    'hierarchical' => true,
+    'labels' => $labels,
+    'show_ui' => true,
+    'show_admin_column' => true,
+    'query_var' => true,
+    'rewrite' => array( 'slug' => 'type' ),
+  ));
+}
+
+function twentytwenty_events_cpt_generating_rule( $wp_rewrite ) {
+	$rules = array();
+	$terms = get_terms( array(
+	    'taxonomy' => 'types',
+	    'hide_empty' => false,
+	) );
+     
+	$post_type = 'events';
+  
+	foreach ($terms as $term) {    
+			
+	    $rules['events/' . $term->slug . '/([^/]*)$'] = 'index.php?post_type=' . $post_type. '&name=$matches[1]';
+				  
+	}
+  
+	// merge with global rules
+	$wp_rewrite->rules = $rules + $wp_rewrite->rules;
+  }
+  add_filter( 'generate_rewrite_rules', 'twentytwenty_events_cpt_generating_rule' );
+
+function twentytwenty_change_events_cpt_link( $permalink, $post ) {
+    if( $post->post_type == 'events' ) {
+        $twentytwenty_events_terms = get_the_terms( $post->ID, 'types' );
+        $twentytwenty_term_slug    = '';
+        if( ! empty( $twentytwenty_events_terms ) ) {
+                $twentytwenty_term_slug = $twentytwenty_term_slug[0]->slug;
+        }
+        $permalink = get_home_url() ."/events/" . $twentytwenty_term_slug . '/' . $post->post_name;
+    }
+    return $permalink;
+}
+add_filter( 'post_type_link', "twentytwenty_change_events_cpt_link", 10, 2 );
